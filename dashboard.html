@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jewellery Management System - Dashboard</title>
+    <link rel="stylesheet" href="dashboard.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar Navigation -->
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <i class="fas fa-gem"></i>
+                <h2>JMS</h2>
+            </div>
+            
+            <ul class="nav-menu">
+                <li class="nav-item active" data-page="dashboard">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span>Dashboard</span>
+                </li>
+                <li class="nav-item" data-page="jewellery">
+                    <i class="fas fa-ring"></i>
+                    <span>Jewellery Items</span>
+                </li>
+                <li class="nav-item" data-page="customers">
+                    <i class="fas fa-users"></i>
+                    <span>Customers</span>
+                </li>
+                <li class="nav-item" data-page="orders">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span>Orders</span>
+                </li>
+                <li class="nav-item" data-page="inventory">
+                    <i class="fas fa-boxes"></i>
+                    <span>Inventory</span>
+                </li>
+                <li class="nav-item" data-page="reports">
+                    <i class="fas fa-chart-bar"></i>
+                    <span>Reports</span>
+                </li>
+            </ul>
+            
+            <div class="sidebar-footer">
+                <button class="logout-btn" onclick="logout()">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Logout</span>
+                </button>
+            </div>
+        </nav>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- Top Header -->
+            <header class="top-header">
+                <div class="header-left">
+                    <button class="menu-toggle" id="menuToggle">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <h1 id="pageTitle">Dashboard</h1>
+                </div>
+                <div class="header-right">
+                    <div class="user-info">
+                        <span id="userName">Admin User</span>
+                        <i class="fas fa-user-circle"></i>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Page Content -->
+            <div class="page-content">
+                <!-- Dashboard Page -->
+                <div id="dashboard-page" class="page active">
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-ring"></i>
+                            </div>
+                            <div class="stat-info">
+                                <h3 id="totalJewellery">0</h3>
+                                <p>Total Jewellery Items</p>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-users"></i>
+                            </div>
+                            <div class="stat-info">
+                                <h3 id="totalCustomers">0</h3>
+                                <p>Total Customers</p>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-shopping-cart"></i>
+                            </div>
+                            <div class="stat-info">
+                                <h3 id="totalOrders">0</h3>
+                                <p>Total Orders</p>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-dollar-sign"></i>
+                            </div>
+                            <div class="stat-info">
+                                <h3 id="totalRevenue">$0</h3>
+                                <p>Total Revenue</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="recent-section">
+                        <h2>Recent Activities</h2>
+                        <div class="recent-grid">
+                            <div class="recent-card">
+                                <h3>Recent Jewellery Items</h3>
+                                <div id="recentJewellery" class="recent-list">
+                                    <!-- Recent items will be populated here -->
+                                </div>
+                            </div>
+                            
+                            <div class="recent-card">
+                                <h3>Recent Orders</h3>
+                                <div id="recentOrders" class="recent-list">
+                                    <!-- Recent orders will be populated here -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Jewellery Items Page -->
+                <div id="jewellery-page" class="page">
+                    <div class="page-header">
+                        <h2>Jewellery Items Management</h2>
+                        <button class="add-btn" onclick="showAddJewelleryModal()">
+                            <i class="fas fa-plus"></i>
+                            Add New Item
+                        </button>
+                    </div>
+                    
+                    <div class="filters">
+                        <input type="text" id="jewellerySearch" placeholder="Search jewellery items..." class="search-input">
+                        <select id="jewelleryCategory" class="filter-select">
+                            <option value="">All Categories</option>
+                            <option value="rings">Rings</option>
+                            <option value="necklaces">Necklaces</option>
+                            <option value="earrings">Earrings</option>
+                            <option value="bracelets">Bracelets</option>
+                            <option value="watches">Watches</option>
+                        </select>
+                    </div>
+                    
+                    <div class="table-container">
+                        <table id="jewelleryTable" class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Image</th>
+                                    <th>Name</th>
+                                    <th>Category</th>
+                                    <th>Material</th>
+                                    <th>Price</th>
+                                    <th>Stock</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="jewelleryTableBody">
+                                <!-- Jewellery items will be populated here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Customers Page -->
+                <div id="customers-page" class="page">
+                    <div class="page-header">
+                        <h2>Customer Management</h2>
+                        <button class="add-btn" onclick="showAddCustomerModal()">
+                            <i class="fas fa-plus"></i>
+                            Add New Customer
+                        </button>
+                    </div>
+                    
+                    <div class="filters">
+                        <input type="text" id="customerSearch" placeholder="Search customers..." class="search-input">
+                    </div>
+                    
+                    <div class="table-container">
+                        <table id="customerTable" class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Phone</th>
+                                    <th>Address</th>
+                                    <th>Total Orders</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="customerTableBody">
+                                <!-- Customers will be populated here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Orders Page -->
+                <div id="orders-page" class="page">
+                    <div class="page-header">
+                        <h2>Order Management</h2>
+                        <button class="add-btn" onclick="showAddOrderModal()">
+                            <i class="fas fa-plus"></i>
+                            Create New Order
+                        </button>
+                    </div>
+                    
+                    <div class="filters">
+                        <input type="text" id="orderSearch" placeholder="Search orders..." class="search-input">
+                        <select id="orderStatus" class="filter-select">
+                            <option value="">All Status</option>
+                            <option value="pending">Pending</option>
+                            <option value="processing">Processing</option>
+                            <option value="shipped">Shipped</option>
+                            <option value="delivered">Delivered</option>
+                            <option value="cancelled">Cancelled</option>
+                        </select>
+                    </div>
+                    
+                    <div class="table-container">
+                        <table id="orderTable" class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Order ID</th>
+                                    <th>Customer</th>
+                                    <th>Items</th>
+                                    <th>Total</th>
+                                    <th>Status</th>
+                                    <th>Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="orderTableBody">
+                                <!-- Orders will be populated here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Inventory Page -->
+                <div id="inventory-page" class="page">
+                    <div class="page-header">
+                        <h2>Inventory Management</h2>
+                        <button class="add-btn" onclick="showAddInventoryModal()">
+                            <i class="fas fa-plus"></i>
+                            Add Stock
+                        </button>
+                    </div>
+                    
+                    <div class="filters">
+                        <input type="text" id="inventorySearch" placeholder="Search inventory..." class="search-input">
+                    </div>
+                    
+                    <div class="table-container">
+                        <table id="inventoryTable" class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Item</th>
+                                    <th>Category</th>
+                                    <th>Current Stock</th>
+                                    <th>Min Stock</th>
+                                    <th>Last Updated</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="inventoryTableBody">
+                                <!-- Inventory will be populated here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Reports Page -->
+                <div id="reports-page" class="page">
+                    <div class="page-header">
+                        <h2>Reports & Analytics</h2>
+                    </div>
+                    
+                    <div class="reports-grid">
+                        <div class="report-card">
+                            <h3>Sales Overview</h3>
+                            <div class="chart-container">
+                                <canvas id="salesChart"></canvas>
+                            </div>
+                        </div>
+                        
+                        <div class="report-card">
+                            <h3>Top Selling Items</h3>
+                            <div id="topItemsList" class="top-items-list">
+                                <!-- Top items will be populated here -->
+                            </div>
+                        </div>
+                        
+                        <div class="report-card">
+                            <h3>Customer Statistics</h3>
+                            <div class="stats-list">
+                                <div class="stat-item">
+                                    <span>New Customers (This Month)</span>
+                                    <span id="newCustomers">0</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span>Repeat Customers</span>
+                                    <span id="repeatCustomers">0</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span>Average Order Value</span>
+                                    <span id="avgOrderValue">$0</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modals -->
+    <!-- Add/Edit Jewellery Modal -->
+    <div id="jewelleryModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="jewelleryModalTitle">Add New Jewellery Item</h2>
+                <button class="close-btn" onclick="closeModal('jewelleryModal')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="jewelleryForm" class="modal-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Name</label>
+                        <input type="text" id="jewelleryName" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Category</label>
+                        <select id="jewelleryCategorySelect" required>
+                            <option value="">Select Category</option>
+                            <option value="rings">Rings</option>
+                            <option value="necklaces">Necklaces</option>
+                            <option value="earrings">Earrings</option>
+                            <option value="bracelets">Bracelets</option>
+                            <option value="watches">Watches</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Material</label>
+                        <input type="text" id="jewelleryMaterial" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Price</label>
+                        <input type="number" id="jewelleryPrice" step="0.01" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Stock Quantity</label>
+                        <input type="number" id="jewelleryStock" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Image URL</label>
+                        <input type="url" id="jewelleryImage" placeholder="https://example.com/image.jpg">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Description</label>
+                    <textarea id="jewelleryDescription" rows="3"></textarea>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="cancel-btn" onclick="closeModal('jewelleryModal')">Cancel</button>
+                    <button type="submit" class="save-btn">Save Item</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add/Edit Customer Modal -->
+    <div id="customerModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="customerModalTitle">Add New Customer</h2>
+                <button class="close-btn" onclick="closeModal('customerModal')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="customerForm" class="modal-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>First Name</label>
+                        <input type="text" id="customerFirstName" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Last Name</label>
+                        <input type="text" id="customerLastName" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" id="customerEmail" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Phone</label>
+                        <input type="tel" id="customerPhone" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Address</label>
+                    <textarea id="customerAddress" rows="3"></textarea>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="cancel-btn" onclick="closeModal('customerModal')">Cancel</button>
+                    <button type="submit" class="save-btn">Save Customer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add/Edit Order Modal -->
+    <div id="orderModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="orderModalTitle">Create New Order</h2>
+                <button class="close-btn" onclick="closeModal('orderModal')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="orderForm" class="modal-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Customer</label>
+                        <select id="orderCustomer" required>
+                            <option value="">Select Customer</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Status</label>
+                        <select id="orderStatusSelect" required>
+                            <option value="pending">Pending</option>
+                            <option value="processing">Processing</option>
+                            <option value="shipped">Shipped</option>
+                            <option value="delivered">Delivered</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Items</label>
+                    <div id="orderItems" class="order-items">
+                        <div class="order-item">
+                            <select class="order-item-select" required>
+                                <option value="">Select Item</option>
+                            </select>
+                            <input type="number" class="order-item-quantity" placeholder="Qty" min="1" required>
+                            <button type="button" class="remove-item-btn" onclick="removeOrderItem(this)">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <button type="button" class="add-item-btn" onclick="addOrderItem()">
+                        <i class="fas fa-plus"></i> Add Item
+                    </button>
+                </div>
+                <div class="order-summary">
+                    <h3>Order Summary</h3>
+                    <div id="orderTotal">Total: $0.00</div>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="cancel-btn" onclick="closeModal('orderModal')">Cancel</button>
+                    <button type="submit" class="save-btn">Create Order</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div id="deleteModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Confirm Delete</h2>
+                <button class="close-btn" onclick="closeModal('deleteModal')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p id="deleteMessage">Are you sure you want to delete this item?</p>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="cancel-btn" onclick="closeModal('deleteModal')">Cancel</button>
+                <button type="button" class="delete-btn" onclick="confirmDelete()">Delete</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="dashboard.js"></script>
+</body>
+</html>
