@@ -196,6 +196,7 @@
                             <thead>
                                 <tr>
                                     <th>Name</th>
+                                    <th>Account</th>
                                     <th>Email</th>
                                     <th>Phone</th>
                                     <th>Address</th>
@@ -502,6 +503,27 @@
             <div class="modal-actions">
                 <button type="button" class="cancel-btn" onclick="closeModal('deleteModal')">Cancel</button>
                 <button type="button" class="delete-btn" onclick="confirmDelete()">Delete</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Send Message Modal -->
+    <div id="sendMessageModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Send Message to Customer</h2>
+                <button class="close-btn" onclick="closeModal('sendMessageModal')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p id="sendMessageCustomerInfo"></p>
+                <input type="text" id="sendEmailSubject" placeholder="Subject (optional)">
+                <textarea id="sendMessageText" rows="4" placeholder="Type your message here..."></textarea>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="cancel-btn" onclick="closeModal('sendMessageModal')">Cancel</button>
+                <button type="button" class="save-btn" onclick="sendEmailToCustomer()">Send Email</button>
             </div>
         </div>
     </div>
