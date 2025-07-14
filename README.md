@@ -1,4 +1,6 @@
-# 💎 Jewellery Management System
+# Jewellery Management System
+
+**Note:** This project is now structured for Vercel: static files in `public/`, backend API in `api/server.js`.
 
 A comprehensive web-based jewellery management system with user registration, authentication, and full CRUD operations for jewellery items, customers, orders, and inventory management.
 
