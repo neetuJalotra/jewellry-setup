@@ -2,7 +2,6 @@
 const express = require('express');
 const jwt = require('jsonwebtoken');
 const cors = require('cors');
-const path = require('path');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -13,12 +12,16 @@ app.use(cors({
 }));
 app.use(express.json());
 
-// Only serve static files in development
-if (!process.env.VERCEL) {
-  app.use(express.static(path.join(__dirname)));
-}
-
 const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret_key';
+
+// Simple test route
+app.get('/api/test', (req, res) => {
+  res.json({ 
+    success: true, 
+    message: 'API is working',
+    timestamp: new Date().toISOString()
+  });
+});
 
 // Authentication middleware
 const authenticateToken = (req, res, next) => {
@@ -129,19 +132,6 @@ app.get('/api/customers', authenticateToken, (req, res) => {
   });
 });
 
-// Serve static files (for development only)
-if (!process.env.VERCEL) {
-  app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'index.html'));
-  });
-  app.get('/register', (req, res) => {
-    res.sendFile(path.join(__dirname, 'register.html'));
-  });
-  app.get('/dashboard', (req, res) => {
-    res.sendFile(path.join(__dirname, 'dashboard.html'));
-  });
-}
-
 // Error handling middleware
 app.use((error, req, res, next) => {
   console.error('Server error:', error);
@@ -160,6 +150,7 @@ app.use('*', (req, res) => {
   });
 });
 
+// Only start server in development
 if (!process.env.VERCEL) {
   app.listen(PORT, () => {
     console.log(`🚀 Server running on port ${PORT}`);
