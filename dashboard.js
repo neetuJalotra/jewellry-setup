@@ -7,6 +7,16 @@ let customers = [];
 let orders = [];
 let inventory = [];
 
+// Get API base URL for different environments
+function getApiBaseUrl() {
+  // Check if we're on Vercel (production)
+  if (window.location.hostname.includes('vercel.app') || window.location.hostname.includes('now.sh')) {
+    return window.location.origin;
+  }
+  // Local development
+  return '';
+}
+
 // Initialize the application
 document.addEventListener('DOMContentLoaded', function() {
   initializeApp();
@@ -18,16 +28,15 @@ document.addEventListener('DOMContentLoaded', function() {
 function initializeApp() {
   // Check if user is logged in
   const user = localStorage.getItem('currentUser');
-  if (!user) {
+  const token = localStorage.getItem('authToken');
+  
+  if (!user || !token) {
     window.location.href = 'index.html';
     return;
   }
   
   currentUser = JSON.parse(user);
   document.getElementById('userName').textContent = currentUser.name || 'Admin User';
-  
-  // Load data from localStorage
-  loadDataFromStorage();
   
   // Initialize navigation
   initializeNavigation();
@@ -117,34 +126,36 @@ function getPageTitle(pageName) {
   return titles[pageName] || 'Dashboard';
 }
 
-// Data Management
-function loadDataFromStorage() {
-  jewelleryItems = JSON.parse(localStorage.getItem('jewelleryItems')) || [];
-  customers = JSON.parse(localStorage.getItem('customers')) || [];
-  orders = JSON.parse(localStorage.getItem('orders')) || [];
-  inventory = JSON.parse(localStorage.getItem('inventory')) || [];
-}
 
-function saveDataToStorage() {
-  localStorage.setItem('jewelleryItems', JSON.stringify(jewelleryItems));
-  localStorage.setItem('customers', JSON.stringify(customers));
-  localStorage.setItem('orders', JSON.stringify(orders));
-  localStorage.setItem('inventory', JSON.stringify(inventory));
-}
 
 // Dashboard functionality
-function loadDashboardData() {
-  updateDashboardStats();
+async function loadDashboardData() {
+  try {
+    const token = localStorage.getItem('authToken');
+    const response = await fetch(`${getApiBaseUrl()}/api/dashboard/stats`, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+    
+    if (response.ok) {
+      const data = await response.json();
+      updateDashboardStats(data.data);
+    } else {
+      console.error('Failed to load dashboard stats');
+    }
+  } catch (error) {
+    console.error('Error loading dashboard data:', error);
+  }
+  
   loadRecentActivities();
 }
 
-function updateDashboardStats() {
-  document.getElementById('totalJewellery').textContent = jewelleryItems.length;
-  document.getElementById('totalCustomers').textContent = customers.length;
-  document.getElementById('totalOrders').textContent = orders.length;
-    
-  const totalRevenue = orders.reduce((sum, order) => sum + order.total, 0);
-  document.getElementById('totalRevenue').textContent = `$${totalRevenue.toFixed(2)}`;
+function updateDashboardStats(stats) {
+  document.getElementById('totalJewellery').textContent = stats.totalJewellery || 0;
+  document.getElementById('totalCustomers').textContent = stats.totalCustomers || 0;
+  document.getElementById('totalOrders').textContent = stats.totalOrders || 0;
+  document.getElementById('totalRevenue').textContent = `$${(stats.totalRevenue || 0).toFixed(2)}`;
 }
 
 function loadRecentActivities() {
@@ -164,34 +175,55 @@ function loadRecentActivities() {
             </div>
         `).join('') : '<p>No jewellery items yet</p>';
     
-  // Recent orders
-  const recentOrders = orders.slice(-5).reverse();
-  const recentOrdersContainer = document.getElementById('recentOrders');
-  recentOrdersContainer.innerHTML = recentOrders.length ?
-    recentOrders.map(order => `
+  // Recent customers
+  const recentCustomers = customers.slice(-5).reverse();
+  const recentCustomersContainer = document.getElementById('recentOrders');
+  recentCustomersContainer.innerHTML = recentCustomers.length ?
+    recentCustomers.map(customer => `
             <div class="recent-item">
                 <div class="recent-item-info">
-                    <h4>Order #${order.id}</h4>
-                    <p>${order.customerName} - $${order.total}</p>
+                    <h4>${customer.firstName} ${customer.lastName}</h4>
+                    <p>${customer.email}</p>
                 </div>
                 <div class="recent-item-meta">
-                    ${order.status}
+                    ${customer.phone}
                 </div>
             </div>
-        `).join('') : '<p>No orders yet</p>';
+        `).join('') : '<p>No customers yet</p>';
 }
 
 // Jewellery Management
-function loadJewelleryData() {
+async function loadJewelleryData() {
+  try {
+    const token = localStorage.getItem('authToken');
+    const response = await fetch(`${getApiBaseUrl()}/api/jewellery`, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+    
+    if (response.ok) {
+      const data = await response.json();
+      jewelleryItems = data.data || [];
+      displayJewelleryItems(jewelleryItems);
+    } else {
+      console.error('Failed to load jewellery data');
+    }
+  } catch (error) {
+    console.error('Error loading jewellery data:', error);
+  }
+}
+
+function displayJewelleryItems(items) {
   const tbody = document.getElementById('jewelleryTableBody');
-  tbody.innerHTML = jewelleryItems.map(item => `
+  tbody.innerHTML = items.map(item => `
         <tr>
             <td>
                 ${item.image ? `<img src="${item.image}" alt="${item.name}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px;">` : '<div style="width: 50px; height: 50px; background: #f0f0f0; border-radius: 4px; display: flex; align-items: center; justify-content: center;"><i class="fas fa-image" style="color: #999;"></i></div>'}
             </td>
             <td>${item.name}</td>
-            <td><span class="badge badge-${item.category}">${item.category}</span></td>
-            <td>${item.material}</td>
+            <td><span class="badge badge-${item.category.toLowerCase()}">${item.category}</span></td>
+            <td>${item.material || 'N/A'}</td>
             <td>$${item.price}</td>
             <td>${item.stock}</td>
             <td>
@@ -273,8 +305,28 @@ function deleteJewellery(id) {
 }
 
 // Customer Management
-function loadCustomerData() {
-  customers = JSON.parse(localStorage.getItem('customers')) || [];
+async function loadCustomerData() {
+  try {
+    const token = localStorage.getItem('authToken');
+    const response = await fetch(`${getApiBaseUrl()}/api/customers`, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+    
+    if (response.ok) {
+      const data = await response.json();
+      customers = data.data || [];
+      displayCustomerData(customers);
+    } else {
+      console.error('Failed to load customer data');
+    }
+  } catch (error) {
+    console.error('Error loading customer data:', error);
+  }
+}
+
+function displayCustomerData(customers) {
   const tbody = document.getElementById('customerTableBody');
   tbody.innerHTML = customers.map(customer => `
         <tr>
@@ -839,6 +891,8 @@ function showNotification(message, type = 'info') {
 // Logout function
 function logout() {
   localStorage.removeItem('currentUser');
+  localStorage.removeItem('authToken');
+  localStorage.removeItem('rememberMe');
   window.location.href = 'index.html';
 }
 
@@ -885,7 +939,7 @@ function notifyCustomerPickup(order) {
 
   const message = `Dear ${customer.firstName}, your order #${order.id} is ready for pickup!`;
 
-  fetch('/api/notify-pickup', {
+  fetch(`${getApiBaseUrl()}/api/notify-pickup`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -928,7 +982,7 @@ function sendMessageToCustomer() {
     showNotification('Please enter a message.', 'error');
     return;
   }
-  fetch('/api/notify-pickup', {
+  fetch(`${getApiBaseUrl()}/api/notify-pickup`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -962,7 +1016,7 @@ function sendEmailToCustomer() {
     showNotification('Please enter a message.', 'error');
     return;
   }
-  fetch('/api/send-email', {
+  fetch(`${getApiBaseUrl()}/api/send-email`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'

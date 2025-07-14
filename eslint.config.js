@@ -17,7 +17,7 @@ export default [
         afterAll: 'readonly'
       },
       ecmaVersion: 'latest',
-      sourceType: 'module'
+      sourceType: 'commonjs'
     },
     rules: {
       'indent': ['error', 2],

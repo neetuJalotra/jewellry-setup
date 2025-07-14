@@ -1,5 +1,15 @@
 // Login Form JavaScript
 
+// Get API base URL for different environments
+function getApiBaseUrl() {
+  // Check if we're on Vercel (production)
+  if (window.location.hostname.includes('vercel.app') || window.location.hostname.includes('now.sh')) {
+    return window.location.origin;
+  }
+  // Local development
+  return '';
+}
+
 document.addEventListener('DOMContentLoaded', function() {
   // Check if user is already logged in
   const currentUser = localStorage.getItem('currentUser');
@@ -17,7 +27,7 @@ function setupLoginForm() {
   const loginForm = document.getElementById('loginForm');
   const loginBtn = document.querySelector('.login-btn');
     
-  loginForm.addEventListener('submit', function(e) {
+  loginForm.addEventListener('submit', async function(e) {
     e.preventDefault();
         
     const email = document.getElementById('email').value;
@@ -28,20 +38,32 @@ function setupLoginForm() {
     loginBtn.classList.add('loading');
     loginBtn.innerHTML = '<span>Signing In...</span>';
         
-    // Authenticate user
-    setTimeout(() => {
-      const user = authenticateUser(email, password);
-      if (user) {
-        // Store user data
+    try {
+      // Make API call to backend
+      const apiBaseUrl = getApiBaseUrl();
+      const response = await fetch(`${apiBaseUrl}/api/auth/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password })
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        // Store user data and token
         const userData = {
-          id: user.id,
-          email: user.email,
-          name: `${user.firstName} ${user.lastName}`,
-          role: user.role,
-          loginTime: new Date().toISOString()
+          id: data.data.userID,
+          email: data.data.email,
+          name: `${data.data.firstName} ${data.data.lastName}`,
+          role: data.data.role,
+          loginTime: new Date().toISOString(),
+          token: data.token
         };
                 
         localStorage.setItem('currentUser', JSON.stringify(userData));
+        localStorage.setItem('authToken', data.token);
                 
         if (remember) {
           localStorage.setItem('rememberMe', 'true');
@@ -50,11 +72,16 @@ function setupLoginForm() {
         // Redirect to dashboard
         window.location.href = 'dashboard.html';
       } else {
-        showError('Invalid email or password. Please try again.');
+        showError(data.message || 'Login failed. Please try again.');
         loginBtn.classList.remove('loading');
         loginBtn.innerHTML = '<span>Sign In</span><i class="fas fa-arrow-right"></i>';
       }
-    }, 1500);
+    } catch (error) {
+      console.error('Login error:', error);
+      showError('Network error. Please check your connection and try again.');
+      loginBtn.classList.remove('loading');
+      loginBtn.innerHTML = '<span>Sign In</span><i class="fas fa-arrow-right"></i>';
+    }
   });
 }
 
@@ -84,15 +111,7 @@ function setupSocialButtons() {
   });
 }
 
-function authenticateUser(email, password) {
-  // Get registered users from localStorage
-  const users = JSON.parse(localStorage.getItem('users')) || [];
-    
-  // Find user with matching email and password
-  const user = users.find(u => u.email === email && u.password === password && u.isActive);
-    
-  return user || null;
-}
+
 
 function showError(message) {
   // Remove existing error messages
