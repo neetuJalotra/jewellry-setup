@@ -142,11 +142,14 @@ app.use((error, req, res, next) => {
   });
 });
 
-// 404 handler
+// Catch-all route for any unmatched requests
 app.use('*', (req, res) => {
+  console.log('404 - Route not found:', req.method, req.url);
   res.status(404).json({
     success: false,
-    message: 'Route not found'
+    message: 'Route not found',
+    path: req.url,
+    method: req.method
   });
 });
 
