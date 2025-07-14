@@ -1,7 +1,6 @@
 // Jewellery Management System - Backend Server (Database-less Version)
 const express = require('express');
 const jwt = require('jsonwebtoken');
-const bcrypt = require('bcrypt');
 const cors = require('cors');
 const path = require('path');
 
@@ -13,7 +12,11 @@ app.use(cors({
   credentials: true
 }));
 app.use(express.json());
-app.use(express.static(path.join(__dirname)));
+
+// Only serve static files in development
+if (!process.env.VERCEL) {
+  app.use(express.static(path.join(__dirname)));
+}
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret_key';
 
@@ -126,16 +129,18 @@ app.get('/api/customers', authenticateToken, (req, res) => {
   });
 });
 
-// Serve static files (for development)
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'index.html'));
-});
-app.get('/register', (req, res) => {
-  res.sendFile(path.join(__dirname, 'register.html'));
-});
-app.get('/dashboard', (req, res) => {
-  res.sendFile(path.join(__dirname, 'dashboard.html'));
-});
+// Serve static files (for development only)
+if (!process.env.VERCEL) {
+  app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'index.html'));
+  });
+  app.get('/register', (req, res) => {
+    res.sendFile(path.join(__dirname, 'register.html'));
+  });
+  app.get('/dashboard', (req, res) => {
+    res.sendFile(path.join(__dirname, 'dashboard.html'));
+  });
+}
 
 // Error handling middleware
 app.use((error, req, res, next) => {
@@ -143,7 +148,15 @@ app.use((error, req, res, next) => {
   res.status(500).json({
     success: false,
     message: 'Internal server error',
-    error: error.message
+    error: process.env.VERCEL ? 'Server error occurred' : error.message
+  });
+});
+
+// 404 handler
+app.use('*', (req, res) => {
+  res.status(404).json({
+    success: false,
+    message: 'Route not found'
   });
 });
 
